@@ -203,13 +203,112 @@
     .reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease;}
     .reveal.in{opacity:1;transform:none;}
     .d1{transition-delay:.1s;}.d2{transition-delay:.2s;}
+
+    /* ── VISIBILITY: raise contrast on all near-invisible text ── */
+    .h-stat-lbl,.s-lbl{color:#666;}
+    .input-lbl{color:#888;}
+    .p-input::placeholder{color:#484848;}
+    #p-msg{color:#666;}
+    .sub-head{color:#999;}
+    .r-meta{color:#666;}
+    .r-chevron{color:#555;}
+    .r-desc{color:#888;}
+    .r-chip{color:#777;}
+    .r-card-body{border-top-color:#1e1e1e;}
+    .r-act-map{color:#888;}
+    .add-btn{color:#777;}
+    .opt-sub{color:#777;}
+    .dev-label{color:#888;}
+    .dev-scale{color:#555;}
+    .dev-summary{color:#888;}
+    .opt-detour{color:#777;}
+    .opt-detour strong{color:#bbb;}
+    .opt-road-add{color:#666;}
+    .maps-a{color:#888;}
+    #no-nearby{color:#555;}
+    .rt-score-lbl,.rt-loc{color:#777;}
+    .rt-desc{color:#888;}
+    .f-tag,.f-links a{color:#666;}
+    .wp-rm{color:#555;}
+    .opt-road-name{color:#aaa;}
+    .planner-desc{color:#aaa;}
+
+    /* ── HAMBURGER ── */
+    .nav-toggle{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:6px;z-index:1001;}
+    .nav-toggle span{width:22px;height:2px;background:var(--cream);display:block;border-radius:2px;transition:transform .22s,opacity .18s;}
+    .nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+    .nav-toggle.open span:nth-child(2){opacity:0;}
+    .nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+    /* ── TABLET ── */
+    @media(min-width:769px) and (max-width:1100px){
+      section{padding:4rem 2.5rem;}
+      #hero{padding:80px 2.5rem 3rem;}
+      footer{padding:2rem 2.5rem;}
+      .planner-grid{grid-template-columns:1fr;}
+      #fr-map{height:420px;position:static;margin-top:16px;}
+      .roads-grid{grid-template-columns:repeat(2,1fr);}
+      .feat-grid{grid-template-columns:repeat(2,1fr);}
+    }
+
+    /* ── MOBILE ── */
+    @media(max-width:768px){
+      nav{padding:0 1.2rem;}
+      .nav-toggle{display:flex;}
+      .nav-links{
+        display:none;flex-direction:column;
+        position:fixed;top:62px;left:0;right:0;
+        background:rgba(9,9,9,.97);backdrop-filter:blur(14px);
+        border-bottom:1px solid var(--border);
+        padding:.5rem 1.4rem 1.2rem;gap:0;z-index:999;
+      }
+      .nav-links.open{display:flex;}
+      .nav-links li{border-bottom:1px solid #1a1a1a;}
+      .nav-links a{padding:.9rem 0;display:block;font-size:.95rem;letter-spacing:.06em;}
+      .nav-cta{margin-top:.5rem;display:inline-block !important;padding:.55rem 1.2rem !important;}
+
+      #hero{padding:80px 1.4rem 3rem;}
+      .hero-stats{gap:1.4rem;flex-wrap:wrap;}
+      .hero-stats>div{flex:1 0 42%;}
+      .h-stat-val{font-size:2rem;}
+
+      section{padding:3rem 1.4rem;}
+      h2{font-size:clamp(2.4rem,10vw,3.8rem) !important;}
+      .planner-head{margin-bottom:1.5rem;}
+      .planner-grid{grid-template-columns:1fr;}
+      #fr-map{height:340px;position:static;margin-top:16px;}
+
+      .p-input{padding:12px;font-size:1rem;}
+      .p-btn{padding:14px;font-size:1rem;}
+      .p-btn-sm{padding:12px;font-size:.88rem;}
+      input[type=range]::-webkit-slider-thumb{width:22px;height:22px;}
+      .r-card-header{padding:12px;}
+      .r-name{font-size:.88rem;}
+      .bulk-row{flex-direction:column;}
+
+      .feat-grid{grid-template-columns:1fr;}
+      .feat-cell{padding:2rem 1.5rem;}
+      .roads-grid{grid-template-columns:1fr;gap:12px;margin-top:2rem;}
+      .road-tile{padding:1.4rem;}
+      .rt-score{font-size:3rem;}
+
+      #cta{padding:4rem 1.4rem;}
+      footer{flex-direction:column;gap:1.5rem;text-align:center;padding:2rem 1.4rem;}
+      .f-links{justify-content:center;flex-wrap:wrap;gap:1.2rem;}
+      .hero-btns{gap:1rem;}
+      .btn-orange{padding:.8rem 1.6rem;width:100%;text-align:center;}
+      .btn-text{display:block;text-align:center;margin-top:.4rem;}
+    }
   </style>
 </head>
 <body>
 
 <nav>
   <a href="#" class="nav-logo">FUN <span>ROUTES</span></a>
-  <ul class="nav-links">
+  <button class="nav-toggle" id="nav-toggle" onclick="toggleNav()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="nav-links">
     <li><a href="#planner">Planner</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#top-roads">Top Roads</a></li>
@@ -755,6 +854,16 @@ window.doRoute=async function(){
   }catch(e){setMsg(e.message,true);}
   finally{$('go-btn').textContent='Generate Route';$('go-btn').disabled=false;}
 };
+
+// Mobile nav
+window.toggleNav=function(){
+  document.getElementById('nav-toggle').classList.toggle('open');
+  document.getElementById('nav-links').classList.toggle('open');
+};
+document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>{
+  document.getElementById('nav-toggle').classList.remove('open');
+  document.getElementById('nav-links').classList.remove('open');
+}));
 
 // Hero animation
 (function(){

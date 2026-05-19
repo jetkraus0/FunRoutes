@@ -545,7 +545,7 @@ function cbar(v){
 }
 
 // State
-let appMap,routePoly,mrkA,mrkB,wpMarkers={},addedWPs=[],oCoords=null,dCoords=null;
+let appMap,routePoly,mrkA,mrkB,wpMarkers={},addedWPs=[],oCoords=null,dCoords=null,rerouteTimer=null;
 const $=id=>document.getElementById(id);
 const show=(id,d='block')=>{$(id).style.display=d;};
 const hide=id=>{$(id).style.display='none';};
@@ -725,7 +725,7 @@ window.addCustomStop=async function(){
       .bindPopup(manualPopup(stop),{maxWidth:220})
       .addTo(appMap);
     appMap.setView([loc.lat,loc.lng],10,{animate:true});
-    optimizeOrder();renderWPs();updateLink();
+    optimizeOrder();renderWPs();updateLink();scheduleReroute();
     inp.value='';
     msg.style.color='#1D9E75';msg.textContent=`Added: ${loc.name}`;
     setTimeout(()=>{msg.textContent='';},2500);
@@ -764,6 +764,7 @@ window.doAddWP=function(id){
     .addTo(appMap);
   optimizeOrder();renderWPs();updateLink();
   if($('optimizer-sec').style.display!=='none')runOptimizer();
+  scheduleReroute();
 };
 
 window.removeWP=function(id){
@@ -778,6 +779,7 @@ window.removeWP=function(id){
   });
   optimizeOrder();renderWPs();updateLink();
   if($('optimizer-sec').style.display!=='none')runOptimizer();
+  scheduleReroute();
 };
 
 // Sort addedWPs in-place by projection onto the origin→destination vector
@@ -841,17 +843,36 @@ function updateLink(){
   try{history.replaceState(null,'',buildShareURL());}catch(e){}
 }
 
+async function execReroute(){
+  if(!oCoords||!dCoords)return;
+  optimizeOrder();renderWPs();
+  const pts=[oCoords,...addedWPs.map(w=>({lat:w.lat,lng:w.lng})),dCoords];
+  const rt=await osrm(pts);
+  drawRoute(rt);
+  appMap.fitBounds(routePoly.getBounds(),{padding:[20,20]});
+  $('s-dist').textContent=Math.round(rt.distance/1609.34).toLocaleString();
+  $('s-time').textContent=(rt.duration/3600).toFixed(1);
+  $('stats-row').classList.add('on');
+}
+function scheduleReroute(){
+  if(!oCoords||!dCoords)return;
+  clearTimeout(rerouteTimer);
+  rerouteTimer=setTimeout(async()=>{
+    try{
+      setMsg('Updating route…');
+      await execReroute();
+      const n=addedWPs.length;
+      setMsg(n?`${oCoords.name} → ${dCoords.name} · ${n} stop${n>1?'s':''}`:`${oCoords.name} → ${dCoords.name}`);
+    }catch(e){setMsg(e.message,true);}
+  },500);
+}
 window.doReroute=async function(){
-  if(!oCoords||!dCoords||!addedWPs.length)return;
+  if(!oCoords||!dCoords)return;
   const btn=$('reroute-btn');btn.textContent='Routing…';btn.disabled=true;
   try{
-    optimizeOrder();renderWPs();
-    const rt=await osrm([oCoords,...addedWPs.map(w=>({lat:w.lat,lng:w.lng})),dCoords]);
-    drawRoute(rt);
-    appMap.fitBounds(routePoly.getBounds(),{padding:[20,20]});
-    $('s-dist').textContent=Math.round(rt.distance/1609.34).toLocaleString();
-    $('s-time').textContent=(rt.duration/3600).toFixed(1);
-    setMsg(`Re-routed through ${addedWPs.length} stop${addedWPs.length>1?'s':''}.`);
+    await execReroute();
+    const n=addedWPs.length;
+    setMsg(n?`Re-routed through ${n} stop${n>1?'s':''}.`:`${oCoords.name} → ${dCoords.name}`);
   }catch(e){setMsg(e.message,true);}
   finally{btn.textContent='Re-route Through Stops';btn.disabled=false;}
 };

@@ -9,9 +9,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <style>
     :root {
-      --bg:#090909;--surface:#111;--surface2:#1a1a1a;
+      --bg:#0c0c0c;--surface:#161616;--surface2:#202020;
       --orange:#FF5500;--orange-dim:#CC4400;
-      --cream:#F2EDE4;--white:#fff;--gray:#777;--border:#222;
+      --cream:#F2EDE4;--white:#fff;--gray:#aaa;--border:#2e2e2e;
       --green:#1D9E75;--red:#E24B4A;
       --legendary:#E24B4A;--legendary-bg:rgba(226,75,74,.1);
       --epic:#EF9F27;--epic-bg:rgba(239,159,39,.1);
@@ -204,34 +204,41 @@
     .reveal.in{opacity:1;transform:none;}
     .d1{transition-delay:.1s;}.d2{transition-delay:.2s;}
 
-    /* ── VISIBILITY: raise contrast on all near-invisible text ── */
-    .h-stat-lbl,.s-lbl{color:#666;}
-    .input-lbl{color:#888;}
-    .p-input::placeholder{color:#484848;}
-    #p-msg{color:#666;}
-    .sub-head{color:#999;}
-    .r-meta{color:#666;}
-    .r-chevron{color:#555;}
-    .r-desc{color:#888;}
-    .r-chip{color:#777;}
-    .r-card-body{border-top-color:#1e1e1e;}
-    .r-act-map{color:#888;}
-    .add-btn{color:#777;}
-    .opt-sub{color:#777;}
-    .dev-label{color:#888;}
-    .dev-scale{color:#555;}
-    .dev-summary{color:#888;}
-    .opt-detour{color:#777;}
-    .opt-detour strong{color:#bbb;}
-    .opt-road-add{color:#666;}
-    .maps-a{color:#888;}
-    #no-nearby{color:#555;}
-    .rt-score-lbl,.rt-loc{color:#777;}
-    .rt-desc{color:#888;}
-    .f-tag,.f-links a{color:#666;}
-    .wp-rm{color:#555;}
-    .opt-road-name{color:#aaa;}
-    .planner-desc{color:#aaa;}
+    /* ── VISIBILITY: all text ≥ #aaa for WCAG AA on dark backgrounds ── */
+    .h-stat-lbl,.s-lbl{color:#aaa;}
+    .input-lbl{color:#bbb;}
+    .p-input::placeholder{color:#666;}
+    #p-msg{color:#aaa;}
+    .sub-head{color:#ccc;}
+    .r-meta{color:#aaa;}
+    .r-chevron{color:#888;}
+    .r-desc{color:#bbb;}
+    .r-chip{color:#aaa;}
+    .r-card-body{border-top-color:#282828;}
+    .r-card:hover{border-color:#383838;}
+    .r-act-map{color:#bbb;}
+    .add-btn{color:#aaa;}
+    .opt-sub{color:#bbb;}
+    .dev-label{color:#ccc;}
+    .dev-scale{color:#999;}
+    .dev-summary{color:#bbb;}
+    .opt-detour{color:#bbb;}
+    .opt-detour strong{color:#eee;}
+    .opt-road-add{color:#aaa;}
+    .opt-road-name{color:#ddd;}
+    .opt-road-row{border-bottom-color:#242424;}
+    .opt-tier-label{border-bottom-color:#2a2a2a;}
+    .maps-a{color:#bbb;}
+    #no-nearby{color:#999;}
+    .rt-score-lbl,.rt-loc{color:#aaa;}
+    .rt-desc{color:#bbb;}
+    .f-tag,.f-links a{color:#aaa;}
+    .wp-rm{color:#888;}
+    .planner-desc{color:#bbb;}
+    .feat-body{color:#bbb;}
+    .hero-sub{color:#bbb;}
+    .rt-loc{color:#aaa;}
+    .r-act-add.done{color:#888;}
 
     /* ── HAMBURGER ── */
     .nav-toggle{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:6px;z-index:1001;}

@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fun Routes — Find Your Perfect Drive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <style>
+    :root {
+      --bg:#090909;--surface:#111;--surface2:#1a1a1a;
+      --orange:#FF5500;--orange-dim:#CC4400;
+      --cream:#F2EDE4;--white:#fff;--gray:#777;--border:#222;
+      --green:#1D9E75;--red:#E24B4A;
+      --legendary:#E24B4A;--legendary-bg:rgba(226,75,74,.1);
+      --epic:#EF9F27;--epic-bg:rgba(239,159,39,.1);
+      --fun:#7BBE42;--fun-bg:rgba(123,190,66,.1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--cream);font-family:'Barlow',sans-serif;overflow-x:hidden;}
+
+    nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 3rem;height:62px;background:rgba(9,9,9,.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,85,0,.12);}
+    .nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.75rem;letter-spacing:.06em;color:var(--white);text-decoration:none;}
+    .nav-logo span{color:var(--orange);}
+    .nav-links{display:flex;gap:2rem;list-style:none;}
+    .nav-links a{color:var(--gray);text-decoration:none;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;transition:color .2s;}
+    .nav-links a:hover{color:var(--white);}
+    .nav-cta{background:var(--orange)!important;color:#fff!important;padding:.45rem 1.1rem;border-radius:6px;}
+
+    #hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 5rem 4rem;position:relative;overflow:hidden;}
+    .hero-road-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+    .hero-glow{position:absolute;top:-20%;right:-10%;width:70%;height:140%;background:radial-gradient(ellipse at 70% 40%,rgba(255,85,0,.06) 0%,transparent 65%);pointer-events:none;}
+    .hero-content{position:relative;z-index:2;max-width:960px;}
+    .pill{display:inline-flex;align-items:center;gap:.6rem;background:rgba(255,85,0,.1);border:1px solid rgba(255,85,0,.28);color:var(--orange);font-size:.72rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;padding:.38rem 1rem;border-radius:100px;margin-bottom:1.6rem;}
+    .pill-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:blink 1.6s ease-in-out infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(5.5rem,13vw,12rem);line-height:.88;letter-spacing:.015em;color:var(--white);margin-bottom:1.8rem;}
+    h1 .accent{color:var(--orange);}
+    h1 .outline{-webkit-text-stroke:1.5px rgba(255,255,255,.22);color:transparent;display:block;}
+    .hero-sub{font-size:1.1rem;color:var(--gray);max-width:460px;line-height:1.75;margin-bottom:2.5rem;}
+    .hero-btns{display:flex;align-items:center;gap:1.4rem;flex-wrap:wrap;}
+    .btn-orange{background:var(--orange);color:#fff;font-family:'Barlow',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:.85rem 2rem;border-radius:8px;border:none;text-decoration:none;cursor:pointer;transition:background .2s,transform .15s;display:inline-block;}
+    .btn-orange:hover{background:var(--orange-dim);transform:translateY(-1px);}
+    .btn-text{color:rgba(255,255,255,.45);font-size:.88rem;font-weight:500;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.15);padding-bottom:2px;transition:color .2s,border-color .2s;}
+    .btn-text:hover{color:var(--cream);}
+    .hero-stats{display:flex;gap:3.5rem;margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border);}
+    .h-stat-val{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:.04em;color:var(--white);line-height:1;}
+    .h-stat-val em{color:var(--orange);font-style:normal;}
+    .h-stat-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#444;margin-top:4px;}
+
+    section{padding:6rem 5rem;}
+    .sec-eyebrow{display:flex;align-items:center;gap:.6rem;font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);margin-bottom:.75rem;}
+    .sec-eyebrow::before{content:'';width:22px;height:2px;background:var(--orange);}
+    h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,6vw,5.2rem);letter-spacing:.03em;color:var(--white);line-height:.95;}
+
+    /* PLANNER */
+    #planner{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+    .planner-head{max-width:600px;margin-bottom:2.5rem;}
+    .planner-desc{color:var(--gray);font-size:1rem;line-height:1.7;margin-top:.6rem;}
+    .planner-grid{display:grid;grid-template-columns:290px 1fr;gap:20px;align-items:start;}
+
+    .input-lbl{font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#444;display:block;margin-bottom:4px;}
+    .p-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:'Barlow',sans-serif;font-size:.9rem;padding:9px 12px;outline:none;transition:border-color .2s;margin-bottom:7px;}
+    .p-input::placeholder{color:#2e2e2e;}
+    .p-input:focus{border-color:rgba(255,85,0,.4);}
+    .p-btn{width:100%;background:var(--orange);color:#fff;border:none;border-radius:8px;font-family:'Barlow',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:10px;cursor:pointer;transition:background .2s;margin-bottom:8px;}
+    .p-btn:hover{background:var(--orange-dim);}
+    .p-btn:disabled{background:#1a1a1a;color:#2e2e2e;cursor:default;}
+    .p-btn-sm{width:100%;background:transparent;color:var(--gray);border:1px solid var(--border);border-radius:7px;font-family:'Barlow',sans-serif;font-size:.78rem;font-weight:600;padding:7px;cursor:pointer;transition:all .2s;margin-bottom:6px;}
+    .p-btn-sm:hover{border-color:#3a3a3a;color:var(--cream);}
+    #p-msg{font-size:.75rem;color:#444;min-height:13px;margin-bottom:7px;}
+    .stats-row{display:none;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+    .stats-row.on{display:grid;}
+    .s-card{background:rgba(255,85,0,.07);border:1px solid rgba(255,85,0,.16);border-radius:8px;padding:9px 6px;text-align:center;}
+    .s-val{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.03em;color:var(--white);line-height:1;}
+    .s-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:#444;margin-top:2px;}
+    .sub-head{font-size:.66rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#3d3d3d;margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+    .sub-head::before{content:'';width:10px;height:1.5px;background:rgba(255,85,0,.4);}
+
+    /* ROAD CARDS */
+    .r-card{background:var(--bg);border:1px solid var(--border);border-radius:9px;margin-bottom:5px;overflow:hidden;transition:border-color .15s;}
+    .r-card:hover{border-color:#2a2a2a;}
+    .r-card.expanded{border-color:rgba(255,85,0,.22);}
+    .r-card-header{display:flex;align-items:center;gap:8px;padding:9px 11px;cursor:pointer;user-select:none;}
+    .r-card-info{flex:1;min-width:0;}
+    .r-name{font-size:.8rem;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .r-meta{font-size:.67rem;color:#333;margin:1px 0 4px;}
+    .r-chevron{color:#2a2a2a;font-size:.55rem;transition:transform .2s,color .2s;flex-shrink:0;}
+    .r-card.expanded .r-chevron{transform:rotate(180deg);color:var(--orange);}
+    .r-card-body{display:none;padding:0 11px 11px;border-top:1px solid #161616;}
+    .r-card.expanded .r-card-body{display:block;}
+    .r-desc{font-size:.78rem;color:#4a4a4a;line-height:1.65;margin:9px 0 10px;}
+    .r-chips{display:flex;gap:5px;margin-bottom:9px;flex-wrap:wrap;}
+    .r-chip{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:.66rem;color:#444;display:flex;flex-direction:column;align-items:center;gap:1px;}
+    .r-chip strong{color:var(--white);font-size:.76rem;font-weight:600;}
+    .r-actions{display:flex;gap:5px;}
+    .r-act{flex:1;border:none;border-radius:7px;font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;padding:7px 4px;cursor:pointer;transition:all .2s;letter-spacing:.03em;}
+    .r-act-map{background:var(--surface2);color:#555;border:1px solid var(--border);}
+    .r-act-map:hover{background:#222;color:var(--cream);}
+    .r-act-add{background:rgba(255,85,0,.1);color:var(--orange);border:1px solid rgba(255,85,0,.22);}
+    .r-act-add:hover{background:rgba(255,85,0,.18);}
+    .r-act-add.done{background:rgba(255,85,0,.05);color:#443;border-color:#1e1e1e;cursor:default;}
+
+    .add-btn{flex-shrink:0;background:transparent;border:1px solid var(--border);border-radius:6px;color:#333;font-family:'Barlow',sans-serif;font-size:.7rem;font-weight:700;padding:3px 8px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+    .add-btn:hover{border-color:var(--orange);color:var(--orange);}
+    .add-btn.done{background:rgba(255,85,0,.07);border-color:rgba(255,85,0,.2);color:var(--orange);cursor:default;}
+
+    .c-bar{display:flex;gap:2px;align-items:center;}
+    .c-seg{width:3px;height:8px;border-radius:2px;}
+    .c-badge{font-size:.61rem;padding:1px 5px;border-radius:10px;font-weight:700;margin-left:3px;}
+
+    /* WAYPOINTS */
+    .wp-item{display:flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 9px;margin-bottom:4px;}
+    .wp-num{width:18px;height:18px;border-radius:50%;flex-shrink:0;background:rgba(255,85,0,.1);border:1px solid rgba(255,85,0,.2);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:var(--orange);}
+    .wp-name{flex:1;min-width:0;font-size:.76rem;font-weight:500;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .wp-rm{background:none;border:none;color:#2a2a2a;cursor:pointer;font-size:.9rem;line-height:1;padding:0;transition:color .15s;}
+    .wp-rm:hover{color:#666;}
+
+    /* OPTIMIZER */
+    .opt-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:13px 13px 11px;}
+    .opt-title{font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--white);margin-bottom:2px;}
+    .opt-sub{font-size:.71rem;color:#383838;line-height:1.5;margin-bottom:12px;}
+    .dev-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;}
+    .dev-label{font-size:.7rem;color:#484848;font-weight:500;}
+    .dev-val{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--orange);line-height:1;}
+    input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;outline:none;cursor:pointer;margin-bottom:4px;}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--orange);border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.5);cursor:pointer;}
+    .dev-scale{display:flex;justify-content:space-between;font-size:.59rem;color:#2a2a2a;margin-bottom:11px;}
+    .dev-summary{font-size:.71rem;color:#444;margin-bottom:10px;padding:7px 9px;background:var(--surface2);border-radius:6px;line-height:1.55;}
+    .dev-summary strong{color:var(--cream);}
+
+    .opt-tier{margin-bottom:9px;}
+    .opt-tier-label{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 0 5px;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #161616;}
+    .lbl-legendary{color:var(--legendary);}
+    .lbl-epic{color:var(--epic);}
+    .lbl-fun{color:var(--fun);}
+    .opt-road-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #0e0e0e;}
+    .opt-road-row:last-child{border-bottom:none;}
+    .opt-road-name{flex:1;min-width:0;font-size:.74rem;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .opt-detour{font-size:.63rem;color:#333;flex-shrink:0;text-align:right;line-height:1.3;min-width:52px;}
+    .opt-detour strong{color:#555;display:block;}
+    .opt-road-add{flex-shrink:0;font-size:.63rem;font-weight:700;padding:3px 7px;border-radius:5px;cursor:pointer;transition:all .15s;border:1px solid #1e1e1e;background:transparent;color:#333;}
+    .opt-road-add:hover{border-color:var(--orange);color:var(--orange);}
+    .opt-road-add.done{background:rgba(255,85,0,.07);border-color:rgba(255,85,0,.18);color:var(--orange);cursor:default;}
+    .bulk-row{display:flex;gap:6px;margin-top:10px;}
+    .bulk-btn{flex:1;border-radius:7px;font-family:'Barlow',sans-serif;font-size:.7rem;font-weight:700;padding:7px 5px;cursor:pointer;transition:all .2s;letter-spacing:.03em;}
+    .bulk-leg{background:var(--legendary-bg);color:var(--legendary);border:1px solid rgba(226,75,74,.18);}
+    .bulk-leg:hover{background:rgba(226,75,74,.18);}
+    .bulk-all{background:rgba(255,85,0,.07);color:var(--orange);border:1px solid rgba(255,85,0,.18);}
+    .bulk-all:hover{background:rgba(255,85,0,.13);}
+
+    .maps-a{display:block;text-align:center;padding:8px;font-size:.75rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--border);border-radius:8px;color:#3a3a3a;text-decoration:none;transition:all .2s;margin-top:9px;}
+    .maps-a:hover{border-color:var(--orange);color:var(--orange);}
+    #no-nearby{font-size:.73rem;color:#2a2a2a;text-align:center;padding:8px 0;}
+    #fr-map{height:580px;border-radius:12px;border:1px solid var(--border);position:sticky;top:82px;}
+
+    .leaflet-popup-content-wrapper{background:var(--surface2)!important;border:1px solid var(--border)!important;border-radius:8px!important;box-shadow:0 4px 20px rgba(0,0,0,.6)!important;}
+    .leaflet-popup-tip{background:var(--surface2)!important;}
+    .leaflet-popup-content{margin:10px 14px!important;color:var(--cream);}
+    .wp-pop-rm{width:100%;background:rgba(226,75,74,.12);border:1px solid rgba(226,75,74,.28);border-radius:5px;color:#E24B4A;font-family:'Barlow',sans-serif;font-size:.72rem;font-weight:700;padding:5px 8px;cursor:pointer;letter-spacing:.04em;margin-top:8px;display:block;transition:background .15s;}
+    .wp-pop-rm:hover{background:rgba(226,75,74,.22);}
+
+    /* FEATURES */
+    #features{background:var(--bg);}
+    .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--border);gap:1px;margin-top:3rem;}
+    .feat-cell{background:var(--surface);padding:2.5rem 2rem;position:relative;overflow:hidden;transition:background .2s;}
+    .feat-cell:hover{background:#141414;}
+    .feat-n{font-family:'Bebas Neue',sans-serif;font-size:5.5rem;color:rgba(255,85,0,.055);line-height:1;position:absolute;top:.5rem;right:1.2rem;pointer-events:none;}
+    .feat-icon{width:44px;height:44px;border-radius:10px;margin-bottom:1.3rem;background:rgba(255,85,0,.08);border:1px solid rgba(255,85,0,.18);display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+    .feat-title{font-family:'Barlow Condensed',sans-serif;font-size:1.25rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--white);margin-bottom:.6rem;}
+    .feat-body{font-size:.88rem;color:var(--gray);line-height:1.75;}
+
+    /* TOP ROADS */
+    #top-roads{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+    .roads-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:3rem;}
+    .road-tile{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:1.8rem;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;}
+    .road-tile:hover{transform:translateY(-4px);border-color:rgba(255,85,0,.28);}
+    .road-tile::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,85,0,.04) 0%,transparent 60%);pointer-events:none;}
+    .rt-score{font-family:'Bebas Neue',sans-serif;font-size:3.8rem;letter-spacing:.03em;color:var(--orange);line-height:1;}
+    .rt-score-lbl{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:#333;margin-bottom:1.3rem;margin-top:1px;}
+    .rt-name{font-family:'Barlow Condensed',sans-serif;font-size:1.45rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--white);margin-bottom:.2rem;}
+    .rt-loc{font-size:.78rem;color:#444;margin-bottom:1rem;}
+    .rt-desc{font-size:.84rem;color:#484848;line-height:1.65;margin-bottom:1.5rem;}
+    .rt-bar{display:flex;gap:3px;}
+    .rt-seg{height:3px;border-radius:2px;flex:1;}
+
+    #cta{background:var(--orange);text-align:center;padding:6rem 5rem;}
+    #cta h2{color:#fff;}
+    #cta p{color:rgba(255,255,255,.72);font-size:1.05rem;line-height:1.75;max-width:480px;margin:1rem auto 2.5rem;}
+    .btn-white{background:#fff;color:var(--orange);font-family:'Barlow',sans-serif;font-size:.95rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:.9rem 2.2rem;border-radius:8px;text-decoration:none;display:inline-block;transition:transform .15s,box-shadow .15s;}
+    .btn-white:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.25);}
+
+    footer{background:var(--bg);border-top:1px solid var(--border);padding:2.5rem 5rem;display:flex;justify-content:space-between;align-items:center;}
+    .f-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.06em;color:var(--white);}
+    .f-logo span{color:var(--orange);}
+    .f-tag{font-size:.75rem;color:#333;margin-top:3px;}
+    .f-links{display:flex;gap:2rem;list-style:none;}
+    .f-links a{color:#333;text-decoration:none;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;transition:color .2s;}
+    .f-links a:hover{color:var(--orange);}
+
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease;}
+    .reveal.in{opacity:1;transform:none;}
+    .d1{transition-delay:.1s;}.d2{transition-delay:.2s;}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">FUN <span>ROUTES</span></a>
+  <ul class="nav-links">
+    <li><a href="#planner">Planner</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#top-roads">Top Roads</a></li>
+    <li><a href="#planner" class="nav-cta">Start Planning</a></li>
+  </ul>
+</nav>
+
+<section id="hero">
+  <div class="hero-road-bg" id="road-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="pill"><div class="pill-dot"></div>Ranked by Curvature Score</div>
+    <h1>THE ROADS<br><span class="accent">WORTH</span><br><span class="outline">DRIVING.</span></h1>
+    <p class="hero-sub">Discover America's most exhilarating routes, scored by how much they twist. Plan through legendary curves and export directly to your GPS.</p>
+    <div class="hero-btns">
+      <a href="#planner" class="btn-orange">Start Planning →</a>
+      <a href="#top-roads" class="btn-text">See top roads</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="h-stat-val">50<em>+</em></div><div class="h-stat-lbl">Curated Routes</div></div>
+      <div><div class="h-stat-val">24<em>k</em></div><div class="h-stat-lbl">Max Curvature Score</div></div>
+      <div><div class="h-stat-val">318</div><div class="h-stat-lbl">Curves in 11 Miles</div></div>
+      <div><div class="h-stat-val">469<em>mi</em></div><div class="h-stat-lbl">Longest Listed Route</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="planner">
+  <div class="planner-head">
+    <div class="sec-eyebrow">Route Planner</div>
+    <h2>PLAN YOUR DRIVE</h2>
+    <p class="planner-desc">Enter a start and end point. Explore curvy roads along the way, expand any card for details and options, or use the <strong style="color:var(--cream)">Deviation Optimizer</strong> to automatically find every legendary road within your detour budget.</p>
+  </div>
+  <div class="planner-grid">
+    <div>
+      <label class="input-lbl">From</label>
+      <input type="text" id="inp-a" class="p-input" placeholder="e.g. Asheville, NC" onkeydown="if(event.key==='Enter')doRoute()">
+      <label class="input-lbl">To</label>
+      <input type="text" id="inp-b" class="p-input" placeholder="e.g. Knoxville, TN" onkeydown="if(event.key==='Enter')doRoute()">
+      <button id="go-btn" class="p-btn" onclick="doRoute()">Generate Route</button>
+      <div id="p-msg"></div>
+
+      <div id="stats-row" class="stats-row">
+        <div class="s-card"><div id="s-dist" class="s-val">—</div><div class="s-lbl">Direct Miles</div></div>
+        <div class="s-card"><div id="s-time" class="s-val">—</div><div class="s-lbl">Hours</div></div>
+      </div>
+
+      <div id="nearby-sec" style="display:none; margin-top:4px">
+        <div class="sub-head">Curvy Roads Nearby — click to expand</div>
+        <div id="nearby-list"></div>
+        <div id="no-nearby" style="display:none; font-size:.73rem; color:#2a2a2a; text-align:center; padding:8px 0">No curvy roads found near this route.</div>
+      </div>
+
+      <div id="wp-sec" style="display:none; margin-top:12px">
+        <div class="sub-head">Added Stops (<span id="wp-count">0</span>)</div>
+        <div id="wp-list"></div>
+        <button id="reroute-btn" class="p-btn-sm" onclick="doReroute()">Re-route Through Stops</button>
+      </div>
+
+      <div id="optimizer-sec" style="display:none; margin-top:12px">
+        <div class="sub-head">Deviation Optimizer</div>
+        <div class="opt-box">
+          <div class="opt-title">Route Deviation Tolerance</div>
+          <div class="opt-sub">How far off the most direct route are you willing to go for better roads?</div>
+          <div class="dev-row">
+            <div class="dev-label">Max detour from direct route</div>
+            <div class="dev-val"><span id="dev-num">20</span>%</div>
+          </div>
+          <input type="range" id="dev-slider" min="5" max="75" step="5" value="20" oninput="runOptimizer()">
+          <div class="dev-scale"><span>5% — barely off-route</span><span>75% — full adventure</span></div>
+          <div id="dev-summary" class="dev-summary">Adjust the slider to discover qualifying roads.</div>
+          <div id="opt-list"></div>
+          <div class="bulk-row">
+            <button class="bulk-btn bulk-leg" onclick="addBulk('legendary')">+ All Legendary</button>
+            <button class="bulk-btn bulk-all" onclick="addBulk('all')">+ All Qualifying</button>
+          </div>
+        </div>
+      </div>
+
+      <a id="maps-a" href="#" target="_blank" rel="noopener noreferrer" class="maps-a" style="display:none">Open in Google Maps ↗</a>
+    </div>
+
+    <div id="fr-map"></div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="sec-eyebrow">Why Fun Routes</div>
+  <h2>BUILT FOR<br>DRIVERS</h2>
+  <div class="feat-grid">
+    <div class="feat-cell reveal">
+      <div class="feat-n">01</div><div class="feat-icon">〰️</div>
+      <div class="feat-title">Curvature Scoring</div>
+      <p class="feat-body">Every road is scored by the total sum of all its curves and bends. Higher score equals more fun — it's math you can feel through the wheel.</p>
+    </div>
+    <div class="feat-cell reveal d1">
+      <div class="feat-n">02</div><div class="feat-icon">🎛</div>
+      <div class="feat-title">Deviation Optimizer</div>
+      <p class="feat-body">Set a detour budget from 5–75%. The optimizer surfaces every legendary road within reach, so you can build the perfect route without guessing.</p>
+    </div>
+    <div class="feat-cell reveal d2">
+      <div class="feat-n">03</div><div class="feat-icon">📍</div>
+      <div class="feat-title">Export Anywhere</div>
+      <p class="feat-body">Build your itinerary with any mix of stops, then send it to Google Maps with all waypoints intact — ready for your phone or GPS device.</p>
+    </div>
+  </div>
+</section>
+
+<section id="top-roads">
+  <div class="sec-eyebrow">Top Roads</div>
+  <h2>LEGENDARY<br>ROUTES</h2>
+  <div class="roads-grid" id="top-roads-grid"></div>
+  <div style="text-align:center;margin-top:2rem">
+    <button id="show-more-btn" class="btn-orange" onclick="toggleMoreRoads()" style="font-size:.82rem;padding:.7rem 1.8rem">Show All Legendary Roads ↓</button>
+  </div>
+  <div class="roads-grid" id="extra-roads-grid" style="display:none;margin-top:16px"></div>
+</section>
+
+<section id="cta">
+  <div class="sec-eyebrow" style="color:rgba(255,255,255,.55);justify-content:center;"><span style="display:inline-flex;align-items:center;gap:.5rem"><span style="width:22px;height:2px;background:rgba(255,255,255,.4);display:inline-block"></span>Ready to Drive</span></div>
+  <h2>FIND YOUR<br>FUN ROUTE</h2>
+  <p>Enter two destinations. Optimize through legendary roads. Build your perfect drive in minutes.</p>
+  <a href="#planner" class="btn-white">Open the Planner →</a>
+</section>
+
+<footer>
+  <div>
+    <div class="f-logo">FUN <span>ROUTES</span></div>
+    <div class="f-tag">The roads worth driving.</div>
+  </div>
+  <ul class="f-links">
+    <li><a href="#planner">Planner</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#top-roads">Top Roads</a></li>
+    <li><a href="https://roadcurvature.com" target="_blank">Curvature Data ↗</a></li>
+  </ul>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const ROADS=[
+  {id:1, name:"Tail of the Dragon",       route:"US-129",        state:"NC/TN",lat:35.4651,lng:-84.0098,miles:11,  curvature:24000,desc:"318 curves in 11 miles. The most iconic stretch of pavement in America — relentless, technical, and unforgettable."},
+  {id:2, name:"Cherohala Skyway",          route:"TN-165/NC-143", state:"NC/TN",lat:35.3534,lng:-84.1532,miles:43,  curvature:14800,desc:"Sky-high ridge riding through Cherokee and Nantahala forests. Far less crowded than the Dragon, equally rewarding."},
+  {id:3, name:"Heavenly Highway",          route:"NC-226A",       state:"NC",   lat:35.8662,lng:-82.0024,miles:5.5, curvature:11200,desc:"Steep switchbacks up Bearwallow Mountain. Short but stunning — tight curves the whole way to the top."},
+  {id:4, name:"Blue Ridge Parkway",        route:"BRP",           state:"NC/VA",lat:36.5,   lng:-81.8,   miles:469, curvature:18600,desc:"469 miles of ridge-top curves through the Appalachians. No trucks, no stoplights. America's favorite road."},
+  {id:5, name:"Newfound Gap Road",         route:"US-441",        state:"TN/NC",lat:35.6118,lng:-83.4265,miles:32,  curvature:9400, desc:"Climbs from river valley to 5,046 ft through Great Smoky Mountains NP. Dense forest gives way to open alpine views."},
+  {id:6, name:"Beartooth Highway",         route:"US-212",        state:"MT/WY",lat:44.9336,lng:-109.557,miles:68,  curvature:22000,desc:"Spiraling switchbacks to 10,947 ft. Designated an All-American Road — arguably the most dramatic highway in the US."},
+  {id:7, name:"Going-to-the-Sun Road",     route:"GTSR",          state:"MT",   lat:48.6962,lng:-113.718,miles:50,  curvature:16800,desc:"Glacier NP's spine carved into cliffs above Logan Pass at 6,646 ft. Surreal, otherworldly mountain driving."},
+  {id:8, name:"Million Dollar Highway",    route:"US-550",        state:"CO",   lat:37.9386,lng:-107.776,miles:25,  curvature:13400,desc:"Cliff-side curves between Ouray and Silverton with zero guard rails and 11,000-ft passes. Not for the faint-hearted."},
+  {id:9, name:"Angeles Crest Highway",     route:"CA-2",          state:"CA",   lat:34.3163,lng:-117.931,miles:66,  curvature:17200,desc:"Climbs from the San Gabriel Valley foothills into the San Gabriel Mountains above LA. Smooth pavement, relentless curves."},
+  {id:10,name:"Big Sur — Pacific Coast Hwy",route:"CA-1",          state:"CA",   lat:36.0591,lng:-121.642,miles:90,  curvature:11600,desc:"Cliffside serpentine over ocean canyons between Carmel and San Simeon. The world's most scenic coastal drive."},
+  {id:11,name:"Mulholland Highway",        route:"CA-23",         state:"CA",   lat:34.0893,lng:-118.856,miles:20,  curvature:8800, desc:"The smooth ribbon of asphalt west of Malibu that LA driving enthusiasts consider their home circuit."},
+  {id:12,name:"Ortega Highway",            route:"CA-74",         state:"CA",   lat:33.6198,lng:-117.375,miles:28,  curvature:7200, desc:"Cleveland National Forest twisties between Lake Elsinore and San Juan Capistrano. Accessible and genuinely fun."},
+  {id:13,name:"Skyline Drive",             route:"Shenandoah NP", state:"VA",   lat:38.5333,lng:-78.4468,miles:105, curvature:12200,desc:"105 miles of ridge road with 75 overlooks through Shenandoah NP. Perpetually misty in the morning."},
+  {id:14,name:"Appalachian Highland Route",route:"US-219 N",      state:"WV",   lat:38.5386,lng:-79.8498,miles:45,  curvature:9100, desc:"A forgotten gem of West Virginia's highland plateau. Sweeping curves, minimal traffic, raw mountain scenery."},
+  {id:15,name:"Wolf Creek Pass",           route:"US-160",        state:"CO",   lat:37.4764,lng:-106.829,miles:23,  curvature:6800, desc:"Rocky Mountain pass at 10,857 ft with sweeping high-alpine curves and snowcapped panoramas."},
+  {id:16,name:"Trail Ridge Road",          route:"Rocky Mtn NP",  state:"CO",   lat:40.4258,lng:-105.789,miles:48,  curvature:8200, desc:"World's highest continuous paved road, cresting at 12,183 ft. Above-treeline driving at its finest."},
+  {id:17,name:"NC-181 Parkway",            route:"NC-181",        state:"NC",   lat:35.9834,lng:-81.8279,miles:30,  curvature:10800,desc:"Known as the Nürburgring of the South. Fast, smooth, relentless twists between Morganton and Newland, NC."},
+  {id:18,name:"Nantahala Gorge Road",      route:"US-74 Gorge",   state:"NC",   lat:35.0873,lng:-82.9712,miles:18,  curvature:7600, desc:"Tight canyon curves along the Nantahala River. Whitewater rapids on one side, sheer cliff walls on the other."},
+  {id:19,name:"McKenzie Pass Highway",     route:"OR-242",        state:"OR",   lat:44.2563,lng:-121.983,miles:37,  curvature:8400, desc:"Ancient lava fields and old-growth forest — Oregon's volcanic mountain highway is otherworldly and uncrowded."},
+  {id:20,name:"Signal Mountain Road",      route:"Teton NP",      state:"WY",   lat:43.8582,lng:-110.676,miles:10,  curvature:5400, desc:"Switchback ascent above Jackson Lake with Grand Teton views around every corner."},
+  {id:21,name:"Pikes Peak Highway",        route:"Pikes Peak",    state:"CO",   lat:38.8403,lng:-105.042,miles:19,  curvature:12400,desc:"156 turns to 14,115 ft. The mountain that inspired 'America the Beautiful' — meant to be driven, not just admired."},
+  {id:22,name:"Glacier Point Road",        route:"Yosemite NP",   state:"CA",   lat:37.731, lng:-119.574,miles:16,  curvature:7800, desc:"Winding through Yosemite's high country to a 3,200-ft perch above Yosemite Valley. Jaw-dropping views."},
+  {id:23,name:"US-421 North",              route:"US-421",        state:"NC",   lat:36.215, lng:-81.683, miles:50,  curvature:9600, desc:"A long sweep of mountain road between Wilkesboro and Boone. Underrated, lightly trafficked, and truly great."},
+  {id:24,name:"Clingmans Dome Road",       route:"GSMNP",         state:"TN",   lat:35.5629,lng:-83.4985,miles:7,   curvature:6200, desc:"Spirals to the highest point in the Smokies at 6,643 ft. Cloud-level driving with panoramic Appalachian views."},
+  {id:25,name:"Dragon Tail South",         route:"US-129 S",      state:"TN",   lat:35.35,  lng:-84.05,  miles:15,  curvature:15000,desc:"The southern continuation of the Dragon corridor — less famous, equally technical, and far less crowded."},
+  // Western / Mountain West
+  {id:26,name:"Road to Hana",             route:"HI-360",        state:"HI",   lat:20.7926,lng:-156.044,miles:64,  curvature:21000,desc:"620 curves and 59 one-lane bridges through Maui's rainforest to a black-sand beach. The most dramatic coastal drive on Earth."},
+  {id:27,name:"Coronado Trail",           route:"US-191",        state:"AZ",   lat:33.4265,lng:-109.222,miles:123, curvature:16000,desc:"460 turns across the White Mountains from Clifton to Springerville. Arizona's most remote and relentless mountain drive."},
+  {id:28,name:"Oak Creek Canyon",         route:"AZ-89A N",      state:"AZ",   lat:34.9908,lng:-111.758,miles:26,  curvature:11400,desc:"Carved canyon walls and switchbacks between Flagstaff and Sedona. Red-rock scenery unlike anything else in America."},
+  {id:29,name:"North Cascades Highway",   route:"WA-20",         state:"WA",   lat:48.5151,lng:-120.668,miles:145, curvature:14200,desc:"Washington's most dramatic drive through the jagged North Cascades. Twin passes at 5,477 ft with glaciers on all sides."},
+  {id:30,name:"Scenic Byway 12",          route:"UT-12",         state:"UT",   lat:37.7673,lng:-111.498,miles:124, curvature:9900, desc:"Utah's most celebrated road linking Bryce Canyon, Grand Staircase-Escalante, and Capitol Reef. Otherworldly redrock at every turn."},
+  {id:31,name:"Lolo Pass Road",           route:"US-12 W",       state:"MT/ID",lat:46.6265,lng:-114.982,miles:99,  curvature:11800,desc:"Follows the Lochsa River through the Bitterroot Mountains on the Lewis & Clark trail. One of America's great river-canyon drives."},
+  {id:32,name:"Seward Highway",           route:"AK-1 S",        state:"AK",   lat:60.5165,lng:-149.476,miles:127, curvature:10200,desc:"From Anchorage to Seward along Turnagain Arm through Chugach NP. One of the most dramatic drives in North America."},
+  {id:33,name:"Guanella Pass",            route:"CR-381",        state:"CO",   lat:39.5765,lng:-105.706,miles:24,  curvature:7400, desc:"High-alpine route between Georgetown and Grant with open tundra above 11,669 ft and 14ers looming on all sides."},
+  {id:34,name:"AZ-89A Jerome Section",    route:"AZ-89A S",      state:"AZ",   lat:34.7487,lng:-112.114,miles:12,  curvature:6400, desc:"Switchback descent from Jerome's cliff-side ghost town into the Verde Valley. Tight hairpins with 1,000-ft drop views."},
+  {id:35,name:"US-89 Vermilion Cliffs",   route:"US-89",         state:"UT/AZ",lat:36.9931,lng:-111.488,miles:89,  curvature:7800, desc:"Links Grand Canyon's North Rim to Bryce Canyon through the Vermilion Cliffs corridor. Astonishing geology the whole way."},
+  {id:36,name:"Denali Highway",           route:"AK-8",          state:"AK",   lat:63.1012,lng:-147.836,miles:135, curvature:6900, desc:"135 miles of gravel through the Alaska Range south of Denali. True wilderness driving — zero traffic, maximum solitude."},
+  {id:37,name:"Tioga Pass Road",          route:"CA-120",        state:"CA",   lat:37.9093,lng:-119.255,miles:59,  curvature:8600, desc:"Climbs to 9,945 ft across Yosemite's high country through granite domes and subalpine meadows. Open only in summer."},
+  {id:38,name:"Mount Evans Road",         route:"CO-5",          state:"CO",   lat:39.5883,lng:-105.643,miles:14,  curvature:7100, desc:"Highest paved road in North America at 14,130 ft. Above treeline the entire way — raw alpine exposure on every bend."},
+  // Pacific Northwest
+  {id:39,name:"North Umpqua Highway",     route:"OR-138",        state:"OR",   lat:43.3265,lng:-122.432,miles:79,  curvature:9800, desc:"Wild & Scenic River canyon carved through old-growth Douglas fir. The smoothest pavement in the Pacific Northwest."},
+  {id:40,name:"Olympic Peninsula Loop",   route:"US-101 W",      state:"WA",   lat:47.9843,lng:-124.664,miles:139, curvature:8600, desc:"Wraps the Olympic Peninsula through temperate rainforest, sea stacks, and the Hoh. Remote and staggeringly beautiful."},
+  {id:41,name:"McKenzie-Santiam Loop",    route:"OR-126/OR-22",  state:"OR",   lat:44.4263,lng:-122.064,miles:82,  curvature:8900, desc:"Dual-volcano loop around the Three Sisters through lava flows and old-growth Cascades forest. Exceptional pavement."},
+  // Southeast
+  {id:42,name:"NC-215 Trans-Mountain",    route:"NC-215",        state:"NC",   lat:35.4182,lng:-82.9254,miles:29,  curvature:12000,desc:"A spectacular crossing of the Blue Ridge crest near Brevard. Tight curves through dense forest up to 6,020 ft."},
+  {id:43,name:"US-276 Pisgah Forest",     route:"US-276",        state:"NC",   lat:35.3201,lng:-82.8109,miles:19,  curvature:10800,desc:"Climbs through Pisgah NF past Looking Glass Falls and Sliding Rock to the Blue Ridge. Classic southern Appalachian driving."},
+  {id:44,name:"Foothills Parkway West",   route:"TN-73",         state:"TN",   lat:35.6482,lng:-83.9102,miles:17,  curvature:8400, desc:"Ridge-top highway above the Smokies foothills, completed in 2018 after 60 years of construction — an instant Tennessee classic."},
+  {id:45,name:"Natchez Trace Parkway",    route:"NPS Trace",     state:"MS/TN",lat:35.1792,lng:-87.1284,miles:444, curvature:7200, desc:"444 miles of serene curves on the old Natchez-to-Nashville wilderness road. No trucks, no billboards, no stoplights."},
+  // Northeast
+  {id:46,name:"Kancamagus Highway",       route:"NH-112",        state:"NH",   lat:44.0657,lng:-71.4548,miles:35,  curvature:9200, desc:"34 miles of ridge highway through White Mountain National Forest with zero stoplights. Peak foliage turns it into a moving painting."},
+  {id:47,name:"Route 100 Vermont",        route:"VT-100",        state:"VT",   lat:43.7432,lng:-72.7246,miles:217, curvature:8800, desc:"The spine of Vermont through ski towns and covered bridges. 200 miles of leaf-tunnel driving at its best in October."},
+  {id:48,name:"Acadia Park Loop Road",    route:"ME Park Loop",  state:"ME",   lat:44.3386,lng:-68.2733,miles:27,  curvature:6600, desc:"Ocean cliffs, granite peaks, and dense spruce forest on Maine's Mount Desert Island. Cadillac Mountain summit adds a paved climb."},
+  {id:49,name:"Route 9W Hudson Highlands",route:"NY-9W",         state:"NY",   lat:41.3765,lng:-73.9868,miles:18,  curvature:5600, desc:"Tight bluff-side curves along the Hudson above West Point. Gorgeous river views through every bend in the Mid-Atlantic."},
+  {id:50,name:"Mohawk Trail",             route:"MA-2",          state:"MA",   lat:42.6265,lng:-72.9348,miles:63,  curvature:6100, desc:"America's first scenic byway, crossing the Berkshires since 1914. Charming towns, hairpins, and sweeping valley views."},
+];
+
+// Utilities
+function hav(la1,lo1,la2,lo2){
+  const R=3958.8,r=Math.PI/180,dLa=(la2-la1)*r,dLo=(lo2-lo1)*r;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*r)*Math.cos(la2*r)*Math.sin(dLo/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function getTier(c){
+  if(c>=10000)return{name:'Legendary',cls:'lbl-legendary',color:'var(--legendary)',bg:'var(--legendary-bg)'};
+  if(c>=3000) return{name:'Epic',     cls:'lbl-epic',     color:'var(--epic)',     bg:'var(--epic-bg)'};
+  return           {name:'Fun',      cls:'lbl-fun',      color:'var(--fun)',      bg:'var(--fun-bg)'};
+}
+function cbar(v){
+  const n=13,p=Math.min(v/25000,1);
+  let s='<div class="c-bar">';
+  for(let i=0;i<n;i++){
+    const f=i/n<p;let c='#639922';
+    if(i/n>.38)c='#BA7517';if(i/n>.68)c='#A32D2D';
+    s+=`<div class="c-seg" style="background:${f?c:'#1c1c1c'};opacity:${f?1:.5}"></div>`;
+  }
+  const t=getTier(v);
+  return s+`<span class="c-badge" style="background:${t.bg};color:${t.color}">${t.name}</span></div>`;
+}
+
+// State
+let appMap,routePoly,mrkA,mrkB,wpMarkers={},addedWPs=[],oCoords=null,dCoords=null;
+const $=id=>document.getElementById(id);
+const show=(id,d='block')=>{$(id).style.display=d;};
+const hide=id=>{$(id).style.display='none';};
+const setMsg=(t,err)=>{$('p-msg').style.color=err?'#ff6030':'#444';$('p-msg').textContent=t;};
+
+// Map
+appMap=L.map('fr-map',{zoomControl:true}).setView([38,-96],4);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  attribution:'© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains:'abcd',maxZoom:19
+}).addTo(appMap);
+
+function mkIcon(bg,lbl){
+  return L.divIcon({
+    html:`<div style="width:26px;height:26px;border-radius:50%;background:${bg};border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.6);font-family:Barlow,sans-serif">${lbl}</div>`,
+    iconSize:[26,26],iconAnchor:[13,13],popupAnchor:[0,-14],className:''
+  });
+}
+
+// Geocode + route
+async function geocode(q){
+  const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`);
+  const d=await r.json();
+  if(!d.length)throw new Error(`"${q}" not found`);
+  return{lat:+d[0].lat,lng:+d[0].lon,name:d[0].display_name.split(',')[0].trim()};
+}
+async function osrm(pts){
+  const s=pts.map(c=>`${c.lng},${c.lat}`).join(';');
+  const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${s}?overview=full&geometries=geojson`);
+  const d=await r.json();
+  if(d.code!=='Ok'||!d.routes?.length)throw new Error('No driveable route found');
+  return d.routes[0];
+}
+function drawRoute(rt){
+  if(routePoly)appMap.removeLayer(routePoly);
+  const coords=rt.geometry.coordinates.map(c=>[c[1],c[0]]);
+  routePoly=L.polyline(coords,{color:'#FF5500',weight:4.5,opacity:.9,lineJoin:'round'}).addTo(appMap);
+  return coords;
+}
+
+// Nearby roads (proximity to polyline samples)
+function findNearby(rc){
+  const N=25,step=Math.max(1,Math.floor(rc.length/N));
+  const s=rc.filter((_,i)=>i%step===0);
+  return ROADS
+    .map(r=>({r,d:Math.min(...s.map(p=>Math.hypot(r.lat-p[0],r.lng-p[1])))}))
+    .filter(x=>x.d<=1.6).sort((a,b)=>b.r.curvature-a.r.curvature).slice(0,7).map(x=>x.r);
+}
+
+// Render expandable road cards
+function renderNearby(roads){
+  if(!roads.length){$('nearby-list').innerHTML='';show('no-nearby');return;}
+  hide('no-nearby');
+  $('nearby-list').innerHTML=roads.map(r=>{
+    const added=addedWPs.some(w=>w.id===r.id);
+    const t=getTier(r.curvature);
+    return `<div class="r-card" id="rcard-${r.id}">
+      <div class="r-card-header" onclick="toggleCard(${r.id})">
+        <div class="r-card-info">
+          <div class="r-name">${r.name}</div>
+          <div class="r-meta">${r.route} · ${r.state} · ${r.miles} mi</div>
+          ${cbar(r.curvature)}
+        </div>
+        <button id="btn-${r.id}" class="add-btn${added?' done':''}" onclick="event.stopPropagation();doAddWP(${r.id})"${added?' disabled':''}>${added?'✓':'+ Add'}</button>
+        <div class="r-chevron">▼</div>
+      </div>
+      <div class="r-card-body">
+        <div class="r-desc">${r.desc}</div>
+        <div class="r-chips">
+          <div class="r-chip"><strong>${r.miles}</strong>miles</div>
+          <div class="r-chip"><strong>${r.curvature.toLocaleString()}</strong>score</div>
+          <div class="r-chip" style="border-color:${t.color}1a;"><strong style="color:${t.color}">${t.name}</strong>tier</div>
+        </div>
+        <div class="r-actions">
+          <button class="r-act r-act-map" onclick="centerMap(${r.id})">📍 Center Map</button>
+          <button id="acbtn-${r.id}" class="r-act r-act-add${added?' done':''}" onclick="doAddWP(${r.id})"${added?' disabled':''}>${added?'✓ Added to Trip':'+ Add to Trip'}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleCard=function(id){
+  document.getElementById(`rcard-${id}`)?.classList.toggle('expanded');
+};
+window.centerMap=function(id){
+  const r=ROADS.find(x=>x.id===id);
+  if(r)appMap.setView([r.lat,r.lng],10,{animate:true});
+};
+
+// Deviation optimizer
+function deviationFor(road){
+  if(!oCoords||!dCoords)return null;
+  const direct=hav(oCoords.lat,oCoords.lng,dCoords.lat,dCoords.lng);
+  const via=hav(oCoords.lat,oCoords.lng,road.lat,road.lng)+hav(road.lat,road.lng,dCoords.lat,dCoords.lng);
+  const extraMi=via-direct;
+  const pct=(extraMi/direct)*100;
+  return{extraMi:Math.round(extraMi),pct:Math.round(pct),directMi:Math.round(direct)};
+}
+
+window.runOptimizer=function(){
+  const dev=parseInt($('dev-slider').value);
+  $('dev-num').textContent=dev;
+  const pctFill=((dev-5)/70)*100;
+  $('dev-slider').style.background=`linear-gradient(to right,#FF5500 0%,#FF5500 ${pctFill}%,#1e1e1e ${pctFill}%,#1e1e1e 100%)`;
+  if(!oCoords||!dCoords){$('dev-summary').innerHTML='Generate a route first.';$('opt-list').innerHTML='';return;}
+
+  const directMi=Math.round(hav(oCoords.lat,oCoords.lng,dCoords.lat,dCoords.lng));
+  const maxExtra=Math.round(directMi*dev/100);
+  const qualifying=ROADS
+    .map(r=>{const d=deviationFor(r);return d&&d.pct>=0&&d.pct<=dev?{road:r,...d}:null;})
+    .filter(Boolean).sort((a,b)=>b.road.curvature-a.road.curvature);
+
+  const leg=qualifying.filter(x=>x.road.curvature>=10000);
+  const epic=qualifying.filter(x=>x.road.curvature>=3000&&x.road.curvature<10000);
+  const fun=qualifying.filter(x=>x.road.curvature<3000);
+
+  $('dev-summary').innerHTML=`<strong>${qualifying.length} road${qualifying.length!==1?'s':''}</strong> fit within <strong>+${dev}%</strong> of your ${directMi}-mile direct route — up to <strong>+${maxExtra} extra miles</strong>.`
+    +(leg.length?` Includes <strong style="color:var(--legendary)">${leg.length} legendary</strong>.`:'');
+
+  if(!qualifying.length){
+    $('opt-list').innerHTML='<div style="font-size:.71rem;color:#2a2a2a;text-align:center;padding:8px 0">No roads qualify at this deviation. Try a higher %.</div>';
+    return;
+  }
+
+  function tierBlock(items,tierName,cls){
+    if(!items.length)return'';
+    return`<div class="opt-tier">
+      <div class="opt-tier-label ${cls}">
+        <span>${tierName} (${items.length})</span>
+        <span style="font-size:.58rem;color:#2a2a2a">${tierName==='Legendary'?'10k+ score':tierName==='Epic'?'3k–10k score':'1k–3k score'}</span>
+      </div>
+      ${items.map(x=>{
+        const added=addedWPs.some(w=>w.id===x.road.id);
+        return`<div class="opt-road-row">
+          <div class="opt-road-name">${x.road.name}</div>
+          <div class="opt-detour"><strong>+${x.extraMi} mi</strong>+${x.pct}%</div>
+          <button id="obtn-${x.road.id}" class="opt-road-add${added?' done':''}" onclick="doAddWP(${x.road.id})"${added?' disabled':''}>${added?'✓':'Add'}</button>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+  $('opt-list').innerHTML=tierBlock(leg,'Legendary','lbl-legendary')+tierBlock(epic,'Epic','lbl-epic')+tierBlock(fun,'Fun','lbl-fun');
+};
+
+window.addBulk=function(type){
+  const dev=parseInt($('dev-slider').value);
+  const qualifying=ROADS
+    .map(r=>{const d=deviationFor(r);return d&&d.pct>=0&&d.pct<=dev?{road:r,...d}:null;})
+    .filter(Boolean);
+  (type==='legendary'?qualifying.filter(x=>x.road.curvature>=10000):qualifying)
+    .forEach(x=>{if(!addedWPs.some(w=>w.id===x.road.id))doAddWP(x.road.id);});
+};
+
+// Waypoints
+function wpPopup(road){
+  const t=getTier(road.curvature);
+  return`<div style="font-family:'Barlow',sans-serif">
+    <div style="font-weight:700;font-size:.84rem;margin-bottom:1px">${road.name}</div>
+    <div style="font-size:.72rem;color:#666;margin-bottom:3px">${road.route} · ${road.state}</div>
+    <span style="font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:4px;background:${t.bg};color:${t.color}">${t.name} · ${road.curvature.toLocaleString()}</span>
+    <button class="wp-pop-rm" onclick="removeWP(${road.id})">× Remove from Trip</button>
+  </div>`;
+}
+
+window.doAddWP=function(id){
+  const road=ROADS.find(r=>r.id===id);
+  if(!road||addedWPs.some(w=>w.id===id))return;
+  addedWPs.push(road);
+  [`btn-${id}`,`acbtn-${id}`,`obtn-${id}`].forEach(bid=>{
+    const b=document.getElementById(bid);if(!b)return;
+    b.disabled=true;b.classList.add('done');
+    if(b.id.startsWith('btn-'))b.textContent='✓';
+    else if(b.id.startsWith('acbtn-'))b.textContent='✓ Added to Trip';
+    else b.textContent='✓';
+  });
+  if(wpMarkers[id])appMap.removeLayer(wpMarkers[id]);
+  const t=getTier(road.curvature);
+  wpMarkers[id]=L.marker([road.lat,road.lng],{icon:mkIcon(t.color,'★')})
+    .bindPopup(wpPopup(road),{maxWidth:220})
+    .addTo(appMap);
+  optimizeOrder();renderWPs();updateLink();
+  if($('optimizer-sec').style.display!=='none')runOptimizer();
+};
+
+window.removeWP=function(id){
+  addedWPs=addedWPs.filter(w=>w.id!==id);
+  if(wpMarkers[id]){appMap.removeLayer(wpMarkers[id]);delete wpMarkers[id];}
+  [`btn-${id}`,`acbtn-${id}`,`obtn-${id}`].forEach(bid=>{
+    const b=document.getElementById(bid);if(!b)return;
+    b.disabled=false;b.classList.remove('done');
+    if(b.id.startsWith('btn-'))b.textContent='+ Add';
+    else if(b.id.startsWith('acbtn-'))b.textContent='+ Add to Trip';
+    else b.textContent='Add';
+  });
+  optimizeOrder();renderWPs();updateLink();
+  if($('optimizer-sec').style.display!=='none')runOptimizer();
+};
+
+// Sort addedWPs in-place by projection onto the origin→destination vector
+function optimizeOrder(){
+  if(!oCoords||!dCoords||addedWPs.length<=1)return;
+  const dx=dCoords.lat-oCoords.lat,dy=dCoords.lng-oCoords.lng;
+  const len2=dx*dx+dy*dy;
+  if(!len2)return;
+  addedWPs.sort((a,b)=>{
+    const tA=((a.lat-oCoords.lat)*dx+(a.lng-oCoords.lng)*dy)/len2;
+    const tB=((b.lat-oCoords.lat)*dx+(b.lng-oCoords.lng)*dy)/len2;
+    return tA-tB;
+  });
+}
+
+function renderWPs(){
+  if(!addedWPs.length){hide('wp-sec');return;}
+  show('wp-sec');
+  $('wp-count').textContent=addedWPs.length;
+  const hasOpt=oCoords&&dCoords&&addedWPs.length>1;
+  $('wp-list').innerHTML=addedWPs.map((r,i)=>`
+    <div class="wp-item">
+      <div class="wp-num">${i+1}</div>
+      <div class="wp-name">${r.name}</div>
+      <button class="wp-rm" onclick="removeWP(${r.id})" title="Remove">×</button>
+    </div>`).join('')
+    +(hasOpt?'<div style="font-size:.62rem;color:#2a2a2a;text-align:right;margin-top:4px">↕ route-optimized order</div>':'');
+}
+
+function updateLink(){
+  if(!oCoords||!dCoords)return;
+  optimizeOrder();
+  const all=[oCoords,...addedWPs.map(w=>({lat:w.lat,lng:w.lng})),dCoords];
+  $('maps-a').href='https://www.google.com/maps/dir/'+all.map(p=>`${p.lat},${p.lng}`).join('/')+'/';
+  show('maps-a');
+}
+
+window.doReroute=async function(){
+  if(!oCoords||!dCoords||!addedWPs.length)return;
+  const btn=$('reroute-btn');btn.textContent='Routing…';btn.disabled=true;
+  try{
+    optimizeOrder();renderWPs();
+    const rt=await osrm([oCoords,...addedWPs.map(w=>({lat:w.lat,lng:w.lng})),dCoords]);
+    drawRoute(rt);
+    appMap.fitBounds(routePoly.getBounds(),{padding:[20,20]});
+    $('s-dist').textContent=Math.round(rt.distance/1609.34).toLocaleString();
+    $('s-time').textContent=(rt.duration/3600).toFixed(1);
+    setMsg(`Re-routed through ${addedWPs.length} stop${addedWPs.length>1?'s':''}.`);
+  }catch(e){setMsg(e.message,true);}
+  finally{btn.textContent='Re-route Through Stops';btn.disabled=false;}
+};
+
+window.doRoute=async function(){
+  const va=$('inp-a').value.trim(),vb=$('inp-b').value.trim();
+  if(!va||!vb){setMsg('Enter both a start and end location.',true);return;}
+  $('go-btn').textContent='Routing…';$('go-btn').disabled=true;
+  hide('nearby-sec');hide('wp-sec');hide('optimizer-sec');hide('maps-a');
+  $('stats-row').classList.remove('on');
+  if(mrkA)appMap.removeLayer(mrkA);if(mrkB)appMap.removeLayer(mrkB);
+  Object.values(wpMarkers).forEach(m=>appMap.removeLayer(m));
+  wpMarkers={};addedWPs=[];
+  setMsg('Looking up locations…');
+  try{
+    oCoords=await geocode(va);
+    await new Promise(r=>setTimeout(r,350));
+    dCoords=await geocode(vb);
+    setMsg('Finding route…');
+    mrkA=L.marker([oCoords.lat,oCoords.lng],{icon:mkIcon('#1D9E75','A')}).bindPopup(`<b style="color:#fff">Start: ${oCoords.name}</b>`).addTo(appMap);
+    mrkB=L.marker([dCoords.lat,dCoords.lng],{icon:mkIcon('#E24B4A','B')}).bindPopup(`<b style="color:#fff">End: ${dCoords.name}</b>`).addTo(appMap);
+    const rt=await osrm([oCoords,dCoords]);
+    const coords=drawRoute(rt);
+    appMap.fitBounds(routePoly.getBounds(),{padding:[24,24]});
+    $('s-dist').textContent=Math.round(rt.distance/1609.34).toLocaleString();
+    $('s-time').textContent=(rt.duration/3600).toFixed(1);
+    $('stats-row').classList.add('on');
+    renderNearby(findNearby(coords));
+    show('nearby-sec');
+    show('optimizer-sec');
+    runOptimizer();
+    updateLink();
+    setMsg(`${oCoords.name} → ${dCoords.name}`);
+  }catch(e){setMsg(e.message,true);}
+  finally{$('go-btn').textContent='Generate Route';$('go-btn').disabled=false;}
+};
+
+// Hero animation
+(function(){
+  const bg=document.getElementById('road-bg');
+  [15,30,45,60,75,85].forEach((pct,i)=>{
+    const el=document.createElement('div');
+    el.innerHTML=Array.from({length:14},()=>'<div style="width:5px;height:56px;border-radius:3px;background:rgba(255,85,0,0.1);flex-shrink:0"></div>').join('');
+    Object.assign(el.style,{position:'absolute',left:`${pct}%`,top:'-200px',display:'flex',flexDirection:'column',gap:'44px',animation:`dashDown 2s ${[0,-.8,-1.6,-.4,-1.2,-.2][i]}s linear infinite`});
+    bg.appendChild(el);
+  });
+  const s=document.createElement('style');
+  s.textContent='@keyframes dashDown{0%{transform:translateY(0)}100%{transform:translateY(112px)}}';
+  document.head.appendChild(s);
+})();
+
+// Top roads rendering
+function rtBar(curvature){
+  const n=10,f=Math.round(Math.min(curvature/25000,1)*n);
+  const cols=['#7a1a1a','#8a1e1e','#9a2222','#aa2828','#ba2e2e','#cc3333','#d63a3a','#e04040','#e84747','#f05252'];
+  return '<div class="rt-bar">'+Array.from({length:n},(_,i)=>
+    `<div class="rt-seg" style="background:${i<f?cols[i]:'#222'}"></div>`
+  ).join('')+'</div>';
+}
+function roadTile(r,delayClass){
+  return`<div class="road-tile reveal${delayClass}">
+    <div class="rt-score">${r.curvature.toLocaleString()}</div>
+    <div class="rt-score-lbl">Curvature Score</div>
+    <div class="rt-name">${r.name}</div>
+    <div class="rt-loc">${r.route} — ${r.state}</div>
+    <div class="rt-desc">${r.desc}</div>
+    ${rtBar(r.curvature)}
+  </div>`;
+}
+function renderTopRoads(){
+  const sorted=[...ROADS].sort((a,b)=>b.curvature-a.curvature);
+  const top9=sorted.slice(0,9);
+  const legendary=sorted.slice(9).filter(r=>r.curvature>=10000);
+  const dc=['',' d1',' d2'];
+  document.getElementById('top-roads-grid').innerHTML=top9.map((r,i)=>roadTile(r,dc[i%3])).join('');
+  document.getElementById('extra-roads-grid').innerHTML=legendary.map((r,i)=>roadTile(r,dc[i%3])).join('');
+  document.querySelectorAll('#top-roads-grid .reveal, #extra-roads-grid .reveal').forEach(el=>obs.observe(el));
+  const btn=document.getElementById('show-more-btn');
+  if(!legendary.length)btn.style.display='none';
+  else btn.textContent=`Show All ${legendary.length} More Legendary Roads ↓`;
+}
+window.toggleMoreRoads=function(){
+  const grid=document.getElementById('extra-roads-grid');
+  const btn=document.getElementById('show-more-btn');
+  const open=grid.style.display!=='none'&&grid.style.display!=='';
+  if(open){grid.style.display='none';btn.textContent=btn.textContent.replace('↑','↓').replace('Hide','Show All');}
+  else{grid.style.display='';btn.textContent=btn.textContent.replace('↓','↑').replace('Show All','Hide');}
+};
+
+// Scroll reveal
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+renderTopRoads();
+</script>
+</body>
+</html>

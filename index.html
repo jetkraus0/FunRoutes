@@ -955,14 +955,14 @@ function roadTile(r,delayClass){
 function renderTopRoads(){
   const sorted=[...ROADS].sort((a,b)=>b.curvature-a.curvature);
   const top9=sorted.slice(0,9);
-  const legendary=sorted.slice(9).filter(r=>r.curvature>=10000);
+  const rest=sorted.slice(9);
   const dc=['',' d1',' d2'];
   document.getElementById('top-roads-grid').innerHTML=top9.map((r,i)=>roadTile(r,dc[i%3])).join('');
-  document.getElementById('extra-roads-grid').innerHTML=legendary.map((r,i)=>roadTile(r,dc[i%3])).join('');
+  document.getElementById('extra-roads-grid').innerHTML=rest.map((r,i)=>roadTile(r,dc[i%3])).join('');
   document.querySelectorAll('#top-roads-grid .reveal, #extra-roads-grid .reveal').forEach(el=>obs.observe(el));
   const btn=document.getElementById('show-more-btn');
-  if(!legendary.length)btn.style.display='none';
-  else btn.textContent=`Show All ${legendary.length} More Legendary Roads ↓`;
+  if(!rest.length)btn.style.display='none';
+  else btn.textContent=`Show All ${rest.length} More Roads ↓`;
 }
 window.toggleMoreRoads=function(){
   const grid=document.getElementById('extra-roads-grid');

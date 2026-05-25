@@ -389,9 +389,9 @@
           <div class="opt-sub">How far off the most direct route are you willing to go for better roads?</div>
           <div class="dev-row">
             <div class="dev-label">Max detour from direct route</div>
-            <div class="dev-val"><span id="dev-num">20</span>%</div>
+            <div class="dev-val"><span id="dev-num">10</span>%</div>
           </div>
-          <input type="range" id="dev-slider" min="5" max="75" step="5" value="20" oninput="runOptimizer()">
+          <input type="range" id="dev-slider" min="5" max="75" step="5" value="10" oninput="runOptimizer()">
           <div class="dev-scale"><span>5% — barely off-route</span><span>75% — full adventure</span></div>
           <div id="dev-summary" class="dev-summary">Adjust the slider to discover qualifying roads.</div>
           <div id="opt-list"></div>
@@ -553,7 +553,7 @@ const setMsg=(t,err)=>{$('p-msg').style.color=err?'#ff6030':'#444';$('p-msg').te
 
 // Map
 appMap=L.map('fr-map',{zoomControl:true}).setView([38,-96],4);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
   attribution:'© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>',
   subdomains:'abcd',maxZoom:19
 }).addTo(appMap);
